@@ -126,7 +126,7 @@ _"Por ahora se deja acceso unicamente all asesor por agilidad de desarrollo, el 
 - Timezone Colombia
 
 # Arquitectura 
-- FrontEnd: React, Typescript
+- FrontEnd: React, Typescript, MUI
 - Backend Node.js/Express + API REST
 - SQLite
 - Tomar desiciones con claude en caso de ser necesario 
@@ -135,6 +135,10 @@ _"Por ahora se deja acceso unicamente all asesor por agilidad de desarrollo, el 
 - Escalabilidad hasta 1000 usuarios
 - Contraseña cifrada de usuarios
 - Autenticación API JWT
+- Test de 2-3 casos criticos (Renovación y nueva contratación de poliza)
+# Mock de datos 
+- Mock de datos de clientes, polizas, asesor aseguradora
+
 
 # Enpoints mínimos necesarios 
 -  /api/policies/dashboard #Vista principal
@@ -144,3 +148,5 @@ _"Por ahora se deja acceso unicamente all asesor por agilidad de desarrollo, el 
 - api/clientes/upload      # Migrar clientes
 - api/clientes/create      # Crear clientes
 - api/policies/export      # Exportar informe a excel
+
+
