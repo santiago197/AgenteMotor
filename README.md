@@ -1,5 +1,7 @@
 1. Cómo correrlo — Máximo 3 comandos. Si no podemos correrlo, no podemos evaluarlo.
 
+- Backend en `backend/`
+- Frontend en `frontend/` (placeholder)
 
 2. Decisiones de diseño que tomaste y por qué
 
