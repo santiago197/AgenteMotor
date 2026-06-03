@@ -1,12 +1,15 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import ContentPasteGoIcon from '@mui/icons-material/ContentPasteGo';
 import PageHeader from '../../components/common/PageHeader';
 import FilterBar from '../../components/FilterBar';
+import FilterDrawer from '../../components/common/FilterDrawer';
 import PolicyTable from '../../components/PolicyTable';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -69,6 +72,9 @@ export default function PolizasInformePage() {
     setPageSize,
     exportToExcel,
     isExporting,
+    filterDrawerOpen,
+    openFilterDrawer,
+    closeFilterDrawer,
   } = usePolizasInforme();
 
   const pageSubtitle = useMemo(
@@ -83,14 +89,15 @@ export default function PolizasInformePage() {
         subtitle={pageSubtitle}
         actions={
           <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-            <Button
-              variant="outlined"
-              startIcon={<FilterAltIcon />}
-              onClick={resetFilters}
-              disabled={activeFilterCount === 0}
-            >
-              Reiniciar filtros
-            </Button>
+            <Badge badgeContent={activeFilterCount} color="primary" invisible={activeFilterCount === 0}>
+              <Button
+                variant="outlined"
+                startIcon={<FilterListIcon />}
+                onClick={openFilterDrawer}
+              >
+                Filtros
+              </Button>
+            </Badge>
             <Button
               variant="contained"
               startIcon={<ContentPasteGoIcon />}
@@ -103,13 +110,41 @@ export default function PolizasInformePage() {
         }
       />
 
-      <FilterBar
-        fields={FILTER_FIELDS}
-        values={filters}
-        onChange={setFilter}
-        onReset={resetFilters}
-        activeCount={activeFilterCount}
-      />
+      <FilterDrawer
+        open={filterDrawerOpen}
+        onClose={closeFilterDrawer}
+        onApply={closeFilterDrawer}
+        onClear={resetFilters}
+      >
+        <FilterBar
+          fields={FILTER_FIELDS}
+          values={filters}
+          onChange={setFilter}
+          onReset={resetFilters}
+          activeCount={activeFilterCount}
+        />
+      </FilterDrawer>
+
+      {activeFilterCount > 0 && (
+        <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mb: 2 }}>
+          {FILTER_FIELDS.filter((f) => filters[f.name as keyof typeof filters] !== undefined && filters[f.name as keyof typeof filters] !== '').map((f) => {
+            const key = f.name as keyof typeof filters;
+            const rawValue = filters[key];
+            const displayValue =
+              f.options
+                ? (f.options.find((o) => o.value === rawValue)?.label ?? String(rawValue))
+                : String(rawValue);
+            return (
+              <Chip
+                key={f.name}
+                label={`${f.label}: ${displayValue}`}
+                onDelete={() => setFilter(key, undefined)}
+                size="small"
+              />
+            );
+          })}
+        </Stack>
+      )}
 
       <Box sx={{ mt: 3 }}>
         <ErrorAlert error={error ?? null} />
