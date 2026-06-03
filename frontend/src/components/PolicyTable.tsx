@@ -73,6 +73,40 @@ export default function PolicyTable({
           value ? dayjs(value as string).format('DD/MM/YYYY') : '—',
       },
       {
+        field: '_diasVencida',
+        headerName: 'Días',
+        width: 110,
+        sortable: false,
+        valueGetter: (_value, row) => {
+          if (!row.fechaFinVig) return null;
+          return dayjs().startOf('day').diff(dayjs(row.fechaFinVig as string).startOf('day'), 'day');
+        },
+        renderCell: (params) => {
+          const dias = params.value as number | null;
+          if (dias === null) return '—';
+          if (dias > 0) {
+            const color = dias > 20 ? 'error' : 'warning';
+            return (
+              <Box sx={{ color: `${color}.main`, fontWeight: 600, fontSize: '0.82rem' }}>
+                +{dias}d vencida
+              </Box>
+            );
+          }
+          if (dias < 0) {
+            return (
+              <Box sx={{ color: 'success.main', fontWeight: 600, fontSize: '0.82rem' }}>
+                {Math.abs(dias)}d restantes
+              </Box>
+            );
+          }
+          return (
+            <Box sx={{ color: 'warning.main', fontWeight: 600, fontSize: '0.82rem' }}>
+              Vence hoy
+            </Box>
+          );
+        },
+      },
+      {
         field: 'fechaInicioVig',
         headerName: 'Inicio Vigencia',
         width: 130,
