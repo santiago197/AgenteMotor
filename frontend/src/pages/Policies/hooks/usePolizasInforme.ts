@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../../lib/apiClient';
 import { useFilters } from '../../../hooks/useFilters';
@@ -26,6 +27,7 @@ export function usePolizasInforme() {
     url: '/polizas/export',
     filename: 'polizas-export.xlsx',
   });
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   const query = useQuery({
     queryKey: ['polizas', filters, page, pageSize],
@@ -60,5 +62,8 @@ export function usePolizasInforme() {
     setPageSize,
     exportToExcel: () => exportToExcel(filters),
     isExporting,
+    filterDrawerOpen,
+    openFilterDrawer: () => setFilterDrawerOpen(true),
+    closeFilterDrawer: () => setFilterDrawerOpen(false),
   };
 }

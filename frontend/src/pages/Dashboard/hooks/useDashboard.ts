@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../../../lib/apiClient';
 import { useFilters } from '../../../hooks/useFilters';
@@ -16,6 +17,7 @@ export function useDashboard() {
   const { filters, setFilter, resetFilters, activeFilterCount } =
     useFilters<DashboardSearchParams>(INITIAL_FILTERS);
   const { page, pageSize, setPage, setPageSize, resetPagination } = usePagination();
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   const query = useQuery({
     queryKey: ['dashboard', filters, page, pageSize],
@@ -58,5 +60,8 @@ export function useDashboard() {
     pageSize,
     setPage,
     setPageSize,
+    filterDrawerOpen,
+    openFilterDrawer: () => setFilterDrawerOpen(true),
+    closeFilterDrawer: () => setFilterDrawerOpen(false),
   };
 }
