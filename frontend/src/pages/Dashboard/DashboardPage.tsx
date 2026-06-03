@@ -2,8 +2,11 @@ import { useMemo, type JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
@@ -11,6 +14,7 @@ import HistoryToggleOffIcon from '@mui/icons-material/HistoryToggleOff';
 import AutoRenewIcon from '@mui/icons-material/AutoRenew';
 import DashboardCard from '../../components/DashboardCard';
 import FilterBar from '../../components/FilterBar';
+import FilterDrawer from '../../components/common/FilterDrawer';
 import PolicyTable from '../../components/PolicyTable';
 import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
@@ -64,6 +68,9 @@ export default function DashboardPage() {
     pageSize,
     setPage,
     setPageSize,
+    filterDrawerOpen,
+    openFilterDrawer,
+    closeFilterDrawer,
   } = useDashboard();
 
   const cards = useMemo(
@@ -75,17 +82,46 @@ export default function DashboardPage() {
     [data]
   );
 
+  const activeChips = useMemo(() => {
+    return Object.entries(filters)
+      .filter(([, value]) => value !== undefined && value !== '')
+      .map(([key, value]) => {
+        const field = FILTER_FIELDS.find((f) => f.name === key);
+        const fieldLabel = field?.label ?? key;
+        const displayValue =
+          field?.options?.find((o) => o.value === value)?.label ?? String(value);
+        return { key, label: `${fieldLabel}: ${displayValue}` };
+      });
+  }, [filters]);
+
   return (
     <Box>
       <PageHeader
         title="Dashboard"
         subtitle="Visualiza el estado de tu cartera y filtra las pólizas críticas en tiempo real."
         actions={
-          <Button variant="outlined" startIcon={<FilterAltIcon />} onClick={resetFilters}>
-            Reiniciar filtros
-          </Button>
+          <Badge badgeContent={activeFilterCount} color="primary" invisible={activeFilterCount === 0}>
+            <Button variant="outlined" startIcon={<FilterListIcon />} onClick={openFilterDrawer}>
+              Filtros
+            </Button>
+          </Badge>
         }
       />
+
+      {activeFilterCount > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            {activeChips.map(({ key, label }) => (
+              <Chip
+                key={key}
+                label={label}
+                onDelete={() => setFilter(key as keyof typeof filters, undefined)}
+                size="small"
+              />
+            ))}
+          </Stack>
+        </Box>
+      )}
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {cards.map((card) => (
@@ -103,13 +139,20 @@ export default function DashboardPage() {
         ))}
       </Grid>
 
-      <FilterBar
-        fields={FILTER_FIELDS}
-        values={filters}
-        onChange={setFilter}
-        onReset={resetFilters}
-        activeCount={activeFilterCount}
-      />
+      <FilterDrawer
+        open={filterDrawerOpen}
+        onClose={closeFilterDrawer}
+        onApply={closeFilterDrawer}
+        onClear={() => { resetFilters(); }}
+      >
+        <FilterBar
+          fields={FILTER_FIELDS}
+          values={filters}
+          onChange={setFilter}
+          onReset={resetFilters}
+          activeCount={activeFilterCount}
+        />
+      </FilterDrawer>
 
       <Box sx={{ mt: 3 }}>
         <ErrorAlert error={error ?? null} />
