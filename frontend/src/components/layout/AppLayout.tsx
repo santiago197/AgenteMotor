@@ -168,7 +168,7 @@ export default function AppLayout() {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* App Bar — always visible */}
       <AppBar
         position="fixed"
@@ -202,6 +202,10 @@ export default function AppLayout() {
         </Toolbar>
       </AppBar>
 
+      {/* Spacer — same height as AppBar Toolbar, pushes content below the fixed AppBar */}
+      <Toolbar />
+
+      <Box sx={{ display: 'flex', flex: 1 }}>
       {/* Sidebar */}
       <Drawer
         variant={isMobile ? 'temporary' : 'permanent'}
@@ -216,6 +220,7 @@ export default function AppLayout() {
             boxSizing: 'border-box',
             borderRight: '1px solid rgba(148, 163, 184, 0.06)',
             background: 'linear-gradient(180deg, #0F1629 0%, #111827 100%)',
+            top: 'auto',
           },
         }}
       >
@@ -228,12 +233,12 @@ export default function AppLayout() {
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3, md: 4 },
-          mt: 8,
           maxWidth: '100%',
           overflow: 'auto',
         }}
       >
         <Outlet />
+      </Box>
       </Box>
     </Box>
   );
