@@ -1,7 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import apiClient from '../../lib/apiClient';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -10,6 +8,8 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Drawer from '@mui/material/Drawer';
 import LoadingButton from '@mui/lab/LoadingButton';
 import PageHeader from '../../components/common/PageHeader';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -21,41 +21,36 @@ import RenovarDialog from '../../components/RenovarDialog';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlineOutlined';
+import HistoryIcon from '@mui/icons-material/History';
+import CloseIcon from '@mui/icons-material/Close';
 import { usePolizaDetalle } from './hooks/usePolizaDetalle';
 import { useRenovar } from './hooks/useRenovar';
-import { useGestion } from './hooks/useGestion';
-import type { LogFormData, LogEntry, PolicyStatus, TipoContratacion } from '../../types';
-
-const LOG_ACTIONS = ['LLAMADA', 'EMAIL', 'VISITA', 'RENOVACION'] as const;
+import { useLogForm } from './hooks/useLogForm';
 
 export default function PolizaDetallePage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const polizaId = id ? Number(id) : undefined;
   const { poliza, historial, isLoading, error } = usePolizaDetalle(polizaId);
-  const logsQuery = useQuery({
-    queryKey: ['clienteLogs', poliza?.clienteId],
-    queryFn: async () => {
-      const { data } = await apiClient.get<{ logs: LogEntry[] }>(`/clientes/${poliza?.clienteId}`);
-      return data.logs;
-    },
-    enabled: !!poliza?.clienteId,
-  });
 
   const { renovar, isLoading: isRenovating } = useRenovar(polizaId);
-  const { registrarGestion, isLoading: isLogging, error: gestionError } = useGestion(polizaId);
+  const {
+    accion,
+    setAccion,
+    notas,
+    setNotas,
+    submit,
+    isLogging,
+    gestionError,
+    logs,
+    logsError,
+    historyDrawerOpen,
+    openHistoryDrawer,
+    closeHistoryDrawer,
+    LOG_ACTIONS,
+  } = useLogForm(polizaId, poliza?.clienteId);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [accion, setAccion] = useState<typeof LOG_ACTIONS[number]>('LLAMADA');
-  const [notas, setNotas] = useState('');
-  const [logSaved, setLogSaved] = useState(false);
-
-  useEffect(() => {
-    if (!isLogging && logSaved) {
-      setNotas('');
-      setLogSaved(false);
-    }
-  }, [isLogging, logSaved]);
 
   const historyColumns: GridColDef[] = useMemo(
     () => [
@@ -85,16 +80,6 @@ export default function PolizaDetallePage() {
     []
   );
 
-  const handleLogSubmit = () => {
-    const data: LogFormData = { accion, notas: notas || undefined };
-    registrarGestion(data, {
-      onSuccess: () => {
-        setNotas('');
-        setLogSaved(true);
-      },
-    });
-  };
-
   return (
     <Box>
       <PageHeader
@@ -109,6 +94,9 @@ export default function PolizaDetallePage() {
             <Button variant="outlined" onClick={() => navigate('/polizas')}>
               Volver a pólizas
             </Button>
+            <Button variant="outlined" startIcon={<HistoryIcon />} onClick={openHistoryDrawer}>
+              Historial
+            </Button>
             <Button
               variant="contained"
               startIcon={<RefreshIcon />}
@@ -122,7 +110,7 @@ export default function PolizaDetallePage() {
 
       <ErrorAlert error={error ?? null} />
       <ErrorAlert error={gestionError ?? null} />
-      <ErrorAlert error={logsQuery.error ?? null} />
+      <ErrorAlert error={logsError ?? null} />
       <LoadingOverlay open={isLoading} message="Cargando póliza..." />
 
       {poliza ? (
@@ -229,18 +217,11 @@ export default function PolizaDetallePage() {
                 variant="contained"
                 loading={isLogging}
                 startIcon={<AddCircleOutlineIcon />}
-                onClick={handleLogSubmit}
+                onClick={submit}
               >
                 Registrar gestión
               </LoadingButton>
             </Box>
-          </Paper>
-
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
-              Log de gestiones
-            </Typography>
-            <LogTimeline logs={logsQuery.data ?? []} />
           </Paper>
         </Stack>
       ) : (
@@ -266,6 +247,14 @@ export default function PolizaDetallePage() {
         }}
         loading={isRenovating}
       />
+
+      <Drawer anchor="right" open={historyDrawerOpen} onClose={closeHistoryDrawer} PaperProps={{ sx: { width: 400, p: 2 } }}>
+        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6">Log de gestiones</Typography>
+          <IconButton onClick={closeHistoryDrawer} size="small"><CloseIcon /></IconButton>
+        </Stack>
+        <LogTimeline logs={logs} />
+      </Drawer>
     </Box>
   );
 }
