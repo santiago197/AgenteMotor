@@ -15,8 +15,8 @@ export default function PolicyStatusChip({ status, size = 'small' }: PolicyStatu
       label={policyStatusLabels[status]}
       size={size}
       sx={{
-        backgroundColor: `${color.main}20`,
-        color: color.light,
+        backgroundColor: `${color.main}18`,
+        color: color.dark,
         borderColor: `${color.main}40`,
         border: '1px solid',
         fontWeight: 600,

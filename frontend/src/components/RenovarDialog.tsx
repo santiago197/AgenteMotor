@@ -43,9 +43,7 @@ export default function RenovarDialog({ open, onClose, onConfirm, loading }: Ren
       fullWidth
       slotProps={{
         paper: {
-          sx: {
-            background: 'linear-gradient(135deg, #111827 0%, #1E293B 100%)',
-          },
+          sx: { bgcolor: 'background.paper' },
         },
       }}
     >

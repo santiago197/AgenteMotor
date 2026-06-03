@@ -185,8 +185,8 @@ export default function PolizaDetallePage() {
             <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
               Registrar gestión
             </Typography>
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 4 }}>
+            <Grid container spacing={2} alignItems="flex-end">
+              <Grid size={{ xs: 12, md: 3 }}>
                 <TextField
                   label="Acción"
                   select
@@ -201,7 +201,7 @@ export default function PolizaDetallePage() {
                   ))}
                 </TextField>
               </Grid>
-              <Grid size={{ xs: 12, md: 8 }}>
+              <Grid size={{ xs: 12, md: 7 }}>
                 <TextField
                   label="Notas"
                   multiline
@@ -211,17 +211,18 @@ export default function PolizaDetallePage() {
                   onChange={(event) => setNotas(event.target.value)}
                 />
               </Grid>
+              <Grid size={{ xs: 12, md: 2 }}>
+                <LoadingButton
+                  variant="contained"
+                  loading={isLogging}
+                  startIcon={<AddCircleOutlineIcon />}
+                  onClick={submit}
+                  fullWidth
+                >
+                  Registrar
+                </LoadingButton>
+              </Grid>
             </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-              <LoadingButton
-                variant="contained"
-                loading={isLogging}
-                startIcon={<AddCircleOutlineIcon />}
-                onClick={submit}
-              >
-                Registrar gestión
-              </LoadingButton>
-            </Box>
           </Paper>
         </Stack>
       ) : (

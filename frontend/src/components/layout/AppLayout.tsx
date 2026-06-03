@@ -172,6 +172,7 @@ export default function AppLayout() {
       {/* App Bar — always visible */}
       <AppBar
         position="fixed"
+        color="default"
         elevation={0}
         sx={{
           bgcolor: 'background.paper',
@@ -222,7 +223,8 @@ export default function AppLayout() {
             borderRight: '1px solid',
             borderColor: 'divider',
             bgcolor: 'background.paper',
-            top: 'auto',
+            top: 64,
+            height: 'calc(100% - 64px)',
           },
         }}
       >

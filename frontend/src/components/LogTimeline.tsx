@@ -73,8 +73,9 @@ export default function LogTimeline({ logs }: LogTimelineProps) {
                 elevation={0}
                 sx={{
                   p: 2,
-                  backgroundColor: 'rgba(17, 24, 39, 0.6)',
-                  border: '1px solid rgba(148, 163, 184, 0.08)',
+                  bgcolor: 'background.default',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   borderRadius: 2,
                 }}
               >
