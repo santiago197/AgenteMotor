@@ -34,7 +34,7 @@ export default function DashboardCard({
       <Card
         sx={{
           height: '100%',
-          background: 'linear-gradient(135deg, #111827 0%, #1E293B 100%)',
+          bgcolor: 'background.paper',
         }}
       >
         <CardContent sx={{ p: 3 }}>
@@ -52,9 +52,10 @@ export default function DashboardCard({
         height: '100%',
         position: 'relative',
         overflow: 'hidden',
+        bgcolor: active ? 'transparent' : 'background.paper',
         background: active
           ? `linear-gradient(135deg, ${color.main}15 0%, ${color.dark}10 100%)`
-          : 'linear-gradient(135deg, #111827 0%, #1E293B 100%)',
+          : undefined,
         border: active
           ? `1.5px solid ${color.main}60`
           : '1px solid rgba(148, 163, 184, 0.08)',

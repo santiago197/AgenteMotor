@@ -174,8 +174,9 @@ export default function AppLayout() {
         position="fixed"
         elevation={0}
         sx={{
-          background: 'background.paper',
-          borderBottom: '1px solid divider',
+          bgcolor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
           zIndex: theme.zIndex.drawer + 1,
         }}
       >
@@ -218,8 +219,9 @@ export default function AppLayout() {
           '& .MuiDrawer-paper': {
             width: DRAWER_WIDTH,
             boxSizing: 'border-box',
-            borderRight: '1px solid rgba(148, 163, 184, 0.06)',
-            background: 'linear-gradient(180deg, #0F1629 0%, #111827 100%)',
+            borderRight: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
             top: 'auto',
           },
         }}
