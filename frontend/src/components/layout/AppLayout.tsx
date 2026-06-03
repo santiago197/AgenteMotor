@@ -11,9 +11,8 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -21,9 +20,12 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import PolicyIcon from '@mui/icons-material/Policy';
 import LogoutIcon from '@mui/icons-material/Logout';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import ShieldIcon from '@mui/icons-material/Shield';
 import { useAuthStore } from '../../store/authStore';
-import apiClient from '../../lib/apiClient';
+import { useThemeStore } from '../../store/themeStore';
+import { useLogout } from '../../pages/Login/hooks/useLogout';
 
 const DRAWER_WIDTH = 260;
 
@@ -37,22 +39,13 @@ export default function AppLayout() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+  const { mode, toggle } = useThemeStore();
+  const { handleLogout } = useLogout();
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-
-  const handleLogout = async () => {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch {
-      // ignore
-    }
-    logout();
-    navigate('/login');
-  };
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -176,50 +169,38 @@ export default function AppLayout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* App Bar — mobile only */}
-      {isMobile && (
-        <AppBar
-          position="fixed"
-          elevation={0}
-          sx={{
-            backgroundColor: 'rgba(10, 14, 26, 0.9)',
-            backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid rgba(148, 163, 184, 0.08)',
-          }}
-        >
-          <Toolbar>
+      {/* App Bar — always visible */}
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          background: 'background.paper',
+          borderBottom: '1px solid divider',
+          zIndex: theme.zIndex.drawer + 1,
+        }}
+      >
+        <Toolbar>
+          {isMobile && (
             <IconButton edge="start" color="inherit" onClick={handleDrawerToggle} sx={{ mr: 2 }}>
               <MenuIcon />
             </IconButton>
-            <ShieldIcon sx={{ mr: 1, color: 'primary.main' }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, flexGrow: 1 }}>
-              AgenteMotor
-            </Typography>
-            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-              <Avatar
-                sx={{
-                  width: 32,
-                  height: 32,
-                  fontSize: '0.75rem',
-                  background: 'linear-gradient(135deg, #6C63FF 0%, #00D9FF 100%)',
-                }}
-              >
-                {user?.nombres?.[0]}
-              </Avatar>
+          )}
+          <ShieldIcon sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, flexGrow: 1 }}>
+            AgenteMotor
+          </Typography>
+          <Tooltip title={mode === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
+            <IconButton color="inherit" onClick={toggle}>
+              {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-            >
-              <MenuItem onClick={handleLogout}>
-                <LogoutIcon sx={{ mr: 1, fontSize: 18 }} />
-                Cerrar sesión
-              </MenuItem>
-            </Menu>
-          </Toolbar>
-        </AppBar>
-      )}
+          </Tooltip>
+          <Tooltip title="Cerrar sesión">
+            <IconButton color="inherit" onClick={handleLogout}>
+              <LogoutIcon />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
+      </AppBar>
 
       {/* Sidebar */}
       <Drawer
@@ -247,7 +228,7 @@ export default function AppLayout() {
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3, md: 4 },
-          mt: isMobile ? 8 : 0,
+          mt: 8,
           maxWidth: '100%',
           overflow: 'auto',
         }}
