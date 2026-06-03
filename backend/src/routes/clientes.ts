@@ -83,34 +83,38 @@ router.post('/upload', upload.single('file'), (req, res) => {
 });
 
 router.get('/template', async (req, res) => {
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Clientes');
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Clientes');
 
-  sheet.columns = [
-    { header: 'nombres', key: 'nombres', width: 20 },
-    { header: 'apellidos', key: 'apellidos', width: 20 },
-    { header: 'tipoDoc', key: 'tipoDoc', width: 10 },
-    { header: 'documento', key: 'documento', width: 18 },
-    { header: 'celular', key: 'celular', width: 16 },
-    { header: 'email', key: 'email', width: 28 },
-    { header: 'telefono', key: 'telefono', width: 16 },
-    { header: 'fechaNacimiento', key: 'fechaNacimiento', width: 16 },
-    { header: 'estadoGestion', key: 'estadoGestion', width: 20 },
-  ];
+    sheet.columns = [
+      { header: 'nombres', key: 'nombres', width: 20 },
+      { header: 'apellidos', key: 'apellidos', width: 20 },
+      { header: 'tipoDoc', key: 'tipoDoc', width: 10 },
+      { header: 'documento', key: 'documento', width: 18 },
+      { header: 'celular', key: 'celular', width: 16 },
+      { header: 'email', key: 'email', width: 28 },
+      { header: 'telefono', key: 'telefono', width: 16 },
+      { header: 'fechaNacimiento', key: 'fechaNacimiento', width: 16 },
+      { header: 'estadoGestion', key: 'estadoGestion', width: 20 },
+    ];
 
-  sheet.addRows([
-    { nombres: 'Carlos', apellidos: 'Ramírez Torres', tipoDoc: 'CC', documento: '1020304050', celular: '+573001234567', email: 'carlos@email.com', telefono: '+5712345678', fechaNacimiento: '1985-03-15', estadoGestion: 'SIN_CONTACTO' },
-    { nombres: 'María', apellidos: 'González Pérez', tipoDoc: 'CC', documento: '1030405060', celular: '+573109876543', email: 'maria@email.com', telefono: '', fechaNacimiento: '1990-07-22', estadoGestion: 'COTIZACION' },
-    { nombres: 'Empresa XYZ', apellidos: 'S.A.S', tipoDoc: 'NIT', documento: '900123456', celular: '+573013334455', email: 'contacto@xyz.com', telefono: '+5712001122', fechaNacimiento: '', estadoGestion: 'POLIZA_CONTRATADA' },
-  ]);
+    sheet.addRows([
+      { nombres: 'Carlos', apellidos: 'Ramírez Torres', tipoDoc: 'CC', documento: '1020304050', celular: '+573001234567', email: 'carlos@email.com', telefono: '+5712345678', fechaNacimiento: '1985-03-15', estadoGestion: 'SIN_CONTACTO' },
+      { nombres: 'María', apellidos: 'González Pérez', tipoDoc: 'CC', documento: '1030405060', celular: '+573109876543', email: 'maria@email.com', telefono: '', fechaNacimiento: '1990-07-22', estadoGestion: 'COTIZACION' },
+      { nombres: 'Empresa XYZ', apellidos: 'S.A.S', tipoDoc: 'NIT', documento: '900123456', celular: '+573013334455', email: 'contacto@xyz.com', telefono: '+5712001122', fechaNacimiento: '', estadoGestion: 'POLIZA_CONTRATADA' },
+    ]);
 
-  sheet.getRow(1).font = { bold: true };
-  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6C63FF' } };
+    sheet.getRow(1).font = { bold: true };
+    sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6C63FF' } };
 
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader('Content-Disposition', 'attachment; filename="plantilla-clientes.xlsx"');
-  await workbook.xlsx.write(res);
-  res.end();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="plantilla-clientes.xlsx"');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    res.status(500).json({ message: 'No se pudo generar la plantilla', details: error instanceof Error ? error.message : String(error) });
+  }
 });
 
 router.get('/:id', (req, res) => {
