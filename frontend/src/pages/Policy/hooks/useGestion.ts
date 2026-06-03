@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../../lib/apiClient';
 import type { LogFormData } from '../../../types';
 
-export function useGestion(polizaId: number | undefined) {
+export function useGestion(polizaId: number | undefined, clienteId?: number) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -11,6 +11,7 @@ export function useGestion(polizaId: number | undefined) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['poliza', polizaId] });
+      queryClient.invalidateQueries({ queryKey: ['clienteLogs', clienteId] });
     },
   });
 

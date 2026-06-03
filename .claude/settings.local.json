@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C /c/Users/santi/Desktop/DESARROLLOS/Agentemotor log --oneline -10)"
+      "Bash(git -C /c/Users/santi/Desktop/DESARROLLOS/Agentemotor log --oneline -10)",
+      "Bash(curl -s http://localhost:3001/api/health)",
+      "Bash(netstat -ano)",
+      "Bash(tasklist:*)",
+      "Bash(timeout 10 node -e \":*)",
+      "Bash(npm install:*)",
+      "Bash(xargs -I{} taskkill /F /PID {})",
+      "Bash(xargs -I{} taskkill //F //PID {})",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

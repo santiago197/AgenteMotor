@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -7,15 +8,22 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlineOutlined';
+import LoadingButton from '@mui/lab/LoadingButton';
 import PageHeader from '../../components/common/PageHeader';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import LoadingOverlay from '../../components/common/LoadingOverlay';
 import LogTimeline from '../../components/LogTimeline';
+import apiClient from '../../lib/apiClient';
 import { useClienteDetalle } from './hooks/useClienteDetalle';
-import type { Cliente } from '../../types';
+import type { Cliente, LogFormData } from '../../types';
+
+const LOG_ACTIONS = ['LLAMADA', 'EMAIL', 'VISITA', 'RENOVACION'] as const;
 
 const getStatusLabel = (estado: Cliente['estadoGestion']) => {
   switch (estado) {
@@ -36,7 +44,21 @@ export default function ClienteDetallePage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const clienteId = id ? Number(id) : undefined;
+  const queryClient = useQueryClient();
   const { cliente, polizas, logs, isLoading, error } = useClienteDetalle(clienteId);
+
+  const [accion, setAccion] = useState<typeof LOG_ACTIONS[number]>('LLAMADA');
+  const [notas, setNotas] = useState('');
+
+  const logMutation = useMutation({
+    mutationFn: async (data: LogFormData) => {
+      await apiClient.post(`/clientes/${clienteId}/log`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cliente', clienteId] });
+      setNotas('');
+    },
+  });
 
   const columns: GridColDef[] = useMemo(
     () => [
@@ -56,18 +78,29 @@ export default function ClienteDetallePage() {
         subtitle="Visualiza los datos del cliente, sus pólizas y el historial de gestión."
         breadcrumbs={[{ label: 'Clientes', href: '/clientes' }, { label: cliente ? `${cliente.nombres} ${cliente.apellidos}` : 'Detalle' }]}
         actions={
-          <Button
-            variant="contained"
-            startIcon={<EditIcon />}
-            onClick={() => navigate(`/clientes/${clienteId}/editar`)}
-            disabled={!cliente}
-          >
-            Editar cliente
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={() => navigate(`/clientes/${clienteId}/editar`)}
+              disabled={!cliente}
+            >
+              Editar cliente
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddCircleOutlineIcon />}
+              onClick={() => navigate(`/clientes/${clienteId}/polizas/nueva`)}
+              disabled={!cliente}
+            >
+              Agregar póliza
+            </Button>
+          </Stack>
         }
       />
 
       <ErrorAlert error={error ?? null} />
+      <ErrorAlert error={logMutation.error ?? null} />
       <LoadingOverlay open={isLoading} message="Cargando cliente..." />
 
       {cliente ? (
@@ -131,11 +164,63 @@ export default function ClienteDetallePage() {
                   <EmptyState
                     title="Este cliente no tiene pólizas"
                     description="Registra una póliza para comenzar a darle seguimiento a su cartera."
+                    action={
+                      <Button
+                        variant="contained"
+                        startIcon={<AddCircleOutlineIcon />}
+                        onClick={() => navigate(`/clientes/${clienteId}/polizas/nueva`)}
+                      >
+                        Agregar primera póliza
+                      </Button>
+                    }
                   />
                 )}
               </Paper>
             </Grid>
           </Grid>
+
+          <Paper sx={{ p: 3, borderRadius: 3 }}>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+              Registrar gestión
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                  label="Acción"
+                  select
+                  fullWidth
+                  value={accion}
+                  onChange={(e) => setAccion(e.target.value as typeof LOG_ACTIONS[number])}
+                >
+                  {LOG_ACTIONS.map((a) => (
+                    <MenuItem key={a} value={a}>
+                      {a}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, md: 8 }}>
+                <TextField
+                  label="Notas"
+                  multiline
+                  rows={3}
+                  fullWidth
+                  value={notas}
+                  onChange={(e) => setNotas(e.target.value)}
+                />
+              </Grid>
+            </Grid>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+              <LoadingButton
+                variant="contained"
+                loading={logMutation.isPending}
+                startIcon={<AddCircleOutlineIcon />}
+                onClick={() => logMutation.mutate({ accion, notas: notas || undefined })}
+              >
+                Registrar gestión
+              </LoadingButton>
+            </Box>
+          </Paper>
 
           <Paper sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>

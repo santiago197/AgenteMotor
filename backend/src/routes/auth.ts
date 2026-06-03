@@ -1,4 +1,4 @@
-import type { Router } from 'express';
+import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../db.js';
@@ -29,10 +29,11 @@ router.post('/login', (req, res) => {
   const accessToken = signAccessToken({ id: user.id, email: user.email, role: user.rol });
   const refreshToken = signRefreshToken(user.id);
 
-  db.prepare('INSERT INTO refresh_tokens (usuarioId, token, expiresAt) VALUES (?, ?, datetime("now", ?))').run(
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+  db.prepare('INSERT INTO refresh_tokens (usuarioId, token, expiresAt) VALUES (?, ?, ?)').run(
     user.id,
     refreshToken,
-    `+${config.refreshTokenExpiration}`
+    expiresAt
   );
 
   res.cookie('refreshToken', refreshToken, {
@@ -52,7 +53,7 @@ router.post('/refresh', (req, res) => {
     return;
   }
 
-  const stored = db.prepare('SELECT usuarioId FROM refresh_tokens WHERE token = ? AND expiresAt > datetime("now")').get(refreshToken);
+  const stored = db.prepare("SELECT usuarioId FROM refresh_tokens WHERE token = ? AND expiresAt > datetime('now')").get(refreshToken);
   if (!stored) {
     res.status(401).json({ message: 'Refresh token inválido' });
     return;

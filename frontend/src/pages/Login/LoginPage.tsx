@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Navigate } from 'react-router-dom';
+import { ThemeProvider, CssBaseline } from '@mui/material';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -12,6 +13,9 @@ import type { LoginRequest } from '../../types';
 import { useLogin } from './hooks/useLogin';
 import { useAuthStore } from '../../store/authStore';
 import ErrorAlert from '../../components/common/ErrorAlert';
+import { createAppTheme } from '../../theme/theme';
+
+const darkTheme = createAppTheme('dark');
 
 export default function LoginPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -32,6 +36,8 @@ export default function LoginPage() {
   }
 
   return (
+    <ThemeProvider theme={darkTheme}>
+    <CssBaseline />
     <Box
       sx={{
         minHeight: '100vh',
@@ -104,5 +110,6 @@ export default function LoginPage() {
         </Stack>
       </Paper>
     </Box>
+    </ThemeProvider>
   );
 }

@@ -9,6 +9,7 @@ import ClienteFormPage from '../pages/Clients/ClienteFormPage';
 import ClienteDetallePage from '../pages/Clients/ClienteDetallePage';
 import PolizasInformePage from '../pages/Policies/PolizasInformePage';
 import PolizaDetallePage from '../pages/Policy/PolizaDetallePage';
+import PolizaFormPage from '../pages/Policy/PolizaFormPage';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
       { path: 'clientes/nuevo', element: <ClienteFormPage /> },
       { path: 'clientes/:id', element: <ClienteDetallePage /> },
       { path: 'clientes/:id/editar', element: <ClienteFormPage /> },
+      { path: 'clientes/:id/polizas/nueva', element: <PolizaFormPage /> },
       { path: 'polizas', element: <PolizasInformePage /> },
       { path: 'polizas/:id', element: <PolizaDetallePage /> },
     ],

@@ -1,4 +1,4 @@
-import type { Router } from 'express';
+import { Router } from 'express';
 import ExcelJS from 'exceljs';
 import db from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -63,6 +63,12 @@ router.post('/', (req, res) => {
     return;
   }
 
+  const clienteOwner = db.prepare('SELECT id FROM clientes WHERE id = ? AND asesorId = ?').get(clienteId, userId);
+  if (!clienteOwner) {
+    res.status(403).json({ message: 'Cliente no encontrado o no autorizado' });
+    return;
+  }
+
   const estado = calculatePolicyStatus(String(fechaFinVig));
   try {
     const result = db.prepare(`INSERT INTO polizas (clienteId, asesorId, aseguradoraId, numeroPoliza, tipo, fechaExpedicion, fechaInicioVig, fechaFinVig, estado, tipoContratacion, notas)
@@ -93,15 +99,22 @@ router.put('/:id', (req, res) => {
   const policyId = Number(req.params.id);
   const userId = Number((req as any).user.id);
   const updates = req.body as Record<string, unknown>;
-  const allowed = ['numeroPoliza', 'tipo', 'fechaExpedicion', 'fechaInicioVig', 'fechaFinVig', 'fechaRenovacion', 'notas', 'estado', 'tipoContratacion'];
+  const allowed = ['numeroPoliza', 'tipo', 'fechaExpedicion', 'fechaInicioVig', 'fechaFinVig', 'fechaRenovacion', 'notas', 'tipoContratacion'];
   const keys = Object.keys(updates).filter((key) => allowed.includes(key));
   if (!keys.length) {
     res.status(400).json({ message: 'No hay campos válidos para actualizar' });
     return;
   }
 
+  const finalUpdates: Record<string, unknown> = {};
+  for (const key of keys) finalUpdates[key] = updates[key];
+  if (finalUpdates.fechaFinVig) {
+    finalUpdates.estado = calculatePolicyStatus(String(finalUpdates.fechaFinVig));
+    if (!keys.includes('estado')) keys.push('estado');
+  }
+
   const setClause = keys.map((key) => `${key} = @${key}`).join(', ');
-  const params = { id: policyId, userId, ...updates } as Record<string, unknown>;
+  const params = { id: policyId, userId, ...finalUpdates } as Record<string, unknown>;
   const statement = db.prepare(`UPDATE polizas SET ${setClause} WHERE id = @id AND asesorId = @userId`);
   const result = statement.run(params);
 
@@ -156,8 +169,13 @@ router.post('/:id/log', (req, res) => {
     return;
   }
 
+  if (!accion || typeof accion !== 'string' || !accion.trim()) {
+    res.status(400).json({ message: 'El campo accion es obligatorio' });
+    return;
+  }
+
   const clienteId = poliza.clienteId;
-  db.prepare('INSERT INTO logs (polizaId, clienteId, asesorId, accion, notas) VALUES (?, ?, ?, ?, ?)').run(policyId, clienteId, userId, accion, notas);
+  db.prepare('INSERT INTO logs (polizaId, clienteId, asesorId, accion, notas) VALUES (?, ?, ?, ?, ?)').run(policyId, clienteId, userId, accion, notas ?? null);
   res.status(201).json({ created: true });
 });
 

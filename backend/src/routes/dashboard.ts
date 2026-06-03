@@ -1,4 +1,4 @@
-import type { Router } from 'express';
+import { Router } from 'express';
 import db from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { calculatePolicyStatus } from '../services/policyStatus.js';
@@ -9,14 +9,14 @@ router.use(requireAuth);
 router.post('/search', (req, res) => {
   const userId = Number((req as any).user.id);
   const { estado, tipo, numeroPoliza, documento, nombre, page = 1, pageSize = 20 } = req.body as Record<string, unknown>;
-  const filters: string[] = ['asesorId = @userId'];
+  const filters: string[] = ['polizas.asesorId = @userId'];
   const params: Record<string, unknown> = { userId };
 
-  if (estado) { filters.push('estado = @estado'); params.estado = estado; }
-  if (tipo) { filters.push('tipo = @tipo'); params.tipo = tipo; }
-  if (numeroPoliza) { filters.push('numeroPoliza LIKE @numeroPoliza'); params.numeroPoliza = `%${numeroPoliza}%`; }
-  if (documento) { filters.push('clienteId IN (SELECT id FROM clientes WHERE documento = @documento AND asesorId = @userId)'); params.documento = documento; }
-  if (nombre) { filters.push('(clientes.nombres || " " || clientes.apellidos) LIKE @nombre'); params.nombre = `%${nombre}%`; }
+  if (estado) { filters.push('polizas.estado = @estado'); params.estado = estado; }
+  if (tipo) { filters.push('polizas.tipo = @tipo'); params.tipo = tipo; }
+  if (numeroPoliza) { filters.push('polizas.numeroPoliza LIKE @numeroPoliza'); params.numeroPoliza = `%${numeroPoliza}%`; }
+  if (documento) { filters.push('polizas.clienteId IN (SELECT id FROM clientes WHERE documento = @documento AND asesorId = @userId)'); params.documento = documento; }
+  if (nombre) { filters.push("(clientes.nombres || ' ' || clientes.apellidos) LIKE @nombre"); params.nombre = `%${nombre}%`; }
 
   const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
   const offset = (Number(page) - 1) * Number(pageSize);
@@ -24,11 +24,11 @@ router.post('/search', (req, res) => {
     FROM polizas
     JOIN clientes ON clientes.id = polizas.clienteId
     ${where}
-    ORDER BY fechaFinVig ASC LIMIT @pageSize OFFSET @offset`;
+    ORDER BY polizas.fechaFinVig ASC LIMIT @pageSize OFFSET @offset`;
 
   const polizas = db.prepare(query).all({ ...params, pageSize, offset });
   const totalRow = db.prepare(`SELECT COUNT(1) AS count FROM polizas JOIN clientes ON clientes.id = polizas.clienteId ${where}`).get(params);
-  const counts = db.prepare(`SELECT estado, COUNT(1) AS total FROM polizas ${where} GROUP BY estado`).all(params);
+  const counts = db.prepare(`SELECT polizas.estado, COUNT(1) AS total FROM polizas JOIN clientes ON clientes.id = polizas.clienteId ${where} GROUP BY polizas.estado`).all(params);
 
   const dashboard = counts.reduce((acc: Record<string, number>, item: { estado: string; total: number }) => {
     acc[item.estado] = item.total;

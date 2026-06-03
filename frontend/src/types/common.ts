@@ -1,3 +1,11 @@
+export interface Aseguradora {
+  id: number;
+  razonSocial: string;
+  nit: string;
+  telefono: string | null;
+  email: string | null;
+}
+
 export interface PaginatedResponse<T> {
   page: number;
   pageSize: number;
