@@ -550,3 +550,4 @@ está tomando el modo claro. Verifica todos los componentes.
   │ Registrar        │ Botón fuera del Grid en un Box aparte      │ Botón dentro del Grid md:2 con                 │
   │ gestión          │                                            │ alignItems="flex-end" — alineado al baseline   │
   └──────────────────┴────────────────────────────────────────────┴────────────────────────────────────────────────┘
+
