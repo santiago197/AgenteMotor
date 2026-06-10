@@ -150,3 +150,19 @@ _"Por ahora se deja acceso unicamente all asesor por agilidad de desarrollo, el 
 - api/policies/export      # Exportar informe a excel
 
 
+
+### Qué dejé fuera y por qué
+
+**Gestión multi-asesor desde rol admin (vista de aseguradora):** La prueba se 
+enfoca en el problema de María como asesora individual. Construir la capa de 
+administración para que una aseguradora vea todos sus asesores habría duplicado 
+el alcance sin aportar al caso de uso central. El modelo de datos lo soporta; 
+la UI no se implementó.
+
+**Notificaciones automáticas (email):** El enunciado no las pedía. 
+En producción serían el siguiente paso natural — una alerta automática cuando 
+una póliza entra en ventana crítica eliminaría la dependencia del "filtro del 
+lunes". Lo dejé fuera por tiempo y porque requeriría integraciones externas 
+
+**Edición y eliminación de pólizas:** Se puede registrar gestión y cambiar 
+estados, pero no editar campos de una póliza existente

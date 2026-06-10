@@ -11,7 +11,9 @@
       "Bash(xargs -I{} taskkill //F //PID {})",
       "Bash(npx tsc:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(find C:UserssantiDesktopDESARROLLOSAgentemotor -name code_review.md -o -name *.json -path */package.json -o -name requirements.txt -type f)",
+      "Bash(find C:UserssantiDesktopDESARROLLOSAgentemotor/backend -maxdepth 2 -type f -name package.json -o -name *.ts -path */src/*)"
     ]
   }
 }
